@@ -1,58 +1,48 @@
-from fastapi import HTTPException, status
-from typing import List
+from app.repositories.animal_repository import *
+from bson import ObjectId
 
-from app.schemas import AnimalCreate, AnimalUpdate, AnimalResponse
-from app.repositories import (
-    insert_animal,
-    find_all_animals,
-    find_animal_by_id,
-    update_animal,
-    delete_animal,
-)
+def format_animal(animal):
+    animal["_id"] = str(animal["_id"])
+    return animal
 
+def get_all_animals_service():
+    animals = get_all_animals()
+    return [format_animal(animal) for animal in animals]
 
-async def criar_animal(data: AnimalCreate) -> AnimalResponse:
-    doc = await insert_animal(data.model_dump())
-    return AnimalResponse(**doc)
+def create_animal_service(animal):
+    result = create_animal(animal.model_dump())
+    return {"message": "animal created", "id": str(result.inserted_id)}
 
+def get_animal_by_id_service(animal_id):
+    try:
+        animal = get_animal_by_id(animal_id)
 
-async def listar_animais() -> List[AnimalResponse]:
-    docs = await find_all_animals()
-    return [AnimalResponse(**d) for d in docs]
+    except:
+        return {"error": "Invalid id"}
 
+    if not animal:
+        return {"error": "animal not found"}
+    return format_animal(animal)
 
-async def buscar_animal(id: str) -> AnimalResponse:
-    doc = await find_animal_by_id(id)
-    if not doc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Animal com ID '{id}' não encontrado."
-        )
-    return AnimalResponse(**doc)
+def update_animal_service(animal_id, animal):
+    try:
+        result = update_animal(animal_id, animal.model_dump(exclude_none=True))
 
+    except:
+        return {"error": "Invalid id"}
 
-async def atualizar_animal(id: str, data: AnimalUpdate) -> AnimalResponse:
-    campos = {k: v for k, v in data.model_dump().items() if v is not None}
+    if result.matched_count == 0:
+        return {"error": "animal not found"}
+    return {"message": "Animal Updated"}
 
-    if not campos:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Nenhum campo válido fornecido para atualização."
-        )
+def delete_animal_service(animal_id):
+    try:
+        result = delete_animal(animal_id)
 
-    doc = await update_animal(id, campos)
-    if not doc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Animal com ID '{id}' não encontrado."
-        )
-    return AnimalResponse(**doc)
+    except:
+        return {"error": "Invalid id"}
 
+    if result.deleted_count == 0:
+        return {"error": "animal not found"}
 
-async def deletar_animal(id: str) -> None:
-    removido = await delete_animal(id)
-    if not removido:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Animal com ID '{id}' não encontrado."
-        )
+    return {"message": "animal was deleted"}

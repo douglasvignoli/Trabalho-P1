@@ -1,38 +1,21 @@
 services:
   api:
     build: .
-    container_name: animal_api
+    container_name: fastapi-app
     ports:
       - "8000:8000"
-    environment:
-      - MONGO_URL=mongodb://mongo:27017
-      - DB_NAME=animaisdb
     depends_on:
-      mongo:
-        condition: service_healthy
-    networks:
-      - animal_net
-    volumes:
-      - .:/app
+      - mongo
+    environment:
+      MONGO_URL: mongodb://mongo:27017
 
   mongo:
-    image: mongo:7.0
-    container_name: animal_mongo
+    image: mongo:7
+    container_name: mongodb
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongo_data:/data/db
-    networks:
-      - animal_net
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-networks:
-  animal_net:
-    driver: bridge
 
 volumes:
   mongo_data:

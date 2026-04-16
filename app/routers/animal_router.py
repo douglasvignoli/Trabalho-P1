@@ -1,59 +1,29 @@
-from fastapi import APIRouter, status
-from typing import List
+from fastapi import APIRouter
+from app.schemas.animal_schemas import Animal, AnimalUpdate
+from app.services.animal_service import *
 
-from app.schemas import AnimalCreate, AnimalUpdate, AnimalResponse
-from app.services import (
-    criar_animal,
-    listar_animais,
-    buscar_animal,
-    atualizar_animal,
-    deletar_animal,
-)
+router = APIRouter()
 
-router = APIRouter(prefix="/animais", tags=["Animais"])
+@router.get("/animal")
+def list_animals():
+    return get_all_animals_service()
 
+@router.get("/hello")
+def hello():
+    return "Hello World!"
 
-@router.post(
-    "",
-    response_model=AnimalResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Cadastrar um novo animal",
-)
-async def create(animal: AnimalCreate):
-    return await criar_animal(animal)
+@router.post("/animals")
+def create_animal(animal: Animal):
+    return create_animal_service(animal)
 
+@router.get("/animals/{animal_id}")
+def get_animal(animal_id: str):
+    return get_animal_by_id_service(animal_id)
 
-@router.get(
-    "",
-    response_model=List[AnimalResponse],
-    summary="Listar todos os animais",
-)
-async def read_all():
-    return await listar_animais()
+@router.put("/animals/{animal_id}")
+def update_animal(animal_id: str, animal: AnimalUpdate):
+    return update_animal_service(animal_id, animal)
 
-
-@router.get(
-    "/{id}",
-    response_model=AnimalResponse,
-    summary="Buscar animal por ID",
-)
-async def read_one(id: str):
-    return await buscar_animal(id)
-
-
-@router.put(
-    "/{id}",
-    response_model=AnimalResponse,
-    summary="Atualizar animal por ID",
-)
-async def update(id: str, dados: AnimalUpdate):
-    return await atualizar_animal(id, dados)
-
-
-@router.delete(
-    "/{id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Remover animal por ID",
-)
-async def delete(id: str):
-    await deletar_animal(id)
+@router.delete("/animals/{animal_id}")
+def delete_animal(animal_id: str):
+    return delete_animal_service(animal_id)
