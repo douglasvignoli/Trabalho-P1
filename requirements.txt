@@ -2,6 +2,3 @@ fastapi
 uvicorn
 pymongo
 pydantic
-sqlalchemy
-alembic
-psycopg2-binary
