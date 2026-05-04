@@ -6,3 +6,5 @@ client = MongoClient(MONGO_URL)
 
 db = client["aula_backend"]
 animals_collection = db["animals"]
+
+#arrumar
