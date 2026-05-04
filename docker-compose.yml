@@ -6,8 +6,10 @@ services:
       - "8000:8000"
     depends_on:
       - mongo
+      - postgres
     environment:
       MONGO_URL: mongodb://mongo:27017
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/aula_backend
 
   mongo:
     image: mongo:7
@@ -17,5 +19,18 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  postgres:
+    image: postgres:16
+    container_name: postgresql
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aula_backend
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
   mongo_data:
+  postgres_data:
